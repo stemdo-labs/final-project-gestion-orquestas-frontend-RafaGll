@@ -23,11 +23,16 @@ jobs:
         id: extract_version
         run: |
           VERSION=$(jq -r '.version' package.json)
+          echo "version=$VERSION" >> $GITHUB_ENV
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Update values.yml
+        run: |
+          sed -i "s/tag:.*/tag: ${{ env.version }}/" values.yml  
 
   deploy:
     needs: pre-deploy
-    uses: stemdo-labs/final-project-exercise-RafaGll/.github/workflows/ci.yml@main
+    uses: stemdo-labs/final-project-exercise-RafaGll/.github/workflows/ci.yml@workflow
     with:
       version: ${{ needs.pre-deploy.outputs.version }}
       deploy: frontend
