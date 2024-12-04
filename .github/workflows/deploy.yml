@@ -29,6 +29,12 @@ jobs:
       - name: Update values.yml
         run: |
           sed -i "s/tag:.*/tag: ${{ env.version }}/" values.yml  
+        
+      - name: Upload updated values.yml
+        uses: actions/upload-artifact@v3
+        with:
+          name: values-yml
+          path: values.yml
 
   deploy:
     needs: pre-deploy
