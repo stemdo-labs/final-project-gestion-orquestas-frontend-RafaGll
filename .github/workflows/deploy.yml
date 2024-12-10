@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.extract_version.outputs.version }}
+      tipo: ${{ steps.get-tipo.outputs.tipo }}
     steps:    
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -38,22 +39,20 @@ jobs:
           name: values-yml
           path: values.yml
 
-  deploy-dev:
+      - id: get-tipo
+        run: |
+          if ${{ github.event_name == 'push' }} && ${{ github.ref != 'refs/heads/main' }}; then
+            echo "tipo=dev" >> $GITHUB_OUTPUT
+          elif ${{ github.event_name == 'pull_request' }} && ${{ github.event.action == 'closed' }} && ${{ github.event.pull_request.merged == true }} && ${{ github.event.pull_request.base.ref == 'main' }}; then
+            echo "tipo=prod" >> $GITHUB_OUTPUT
+          fi
+
+  deploy:
     needs: pre-deploy
-    if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
     uses: stemdo-labs/final-project-exercise-RafaGll/.github/workflows/ci.yml@workflow
     with:
       version: ${{ needs.pre-deploy.outputs.version }}
       deploy: frontend
-      environment: dev
+      environment: ${{ needs.pre-deploy.outputs.tipo }}
     secrets: inherit
 
-  deploy-prod:
-    needs: pre-deploy
-    if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' }}
-    uses: stemdo-labs/final-project-exercise-RafaGll/.github/workflows/ci.yml@workflow
-    with:
-      version: ${{ needs.pre-deploy.outputs.version }}
-      deploy: frontend
-      environment: prod
-    secrets: inherit
