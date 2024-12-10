@@ -2,8 +2,10 @@ name: Despliegue
 
 on:
   push:
-    branches:
+    branches-ignore:
       - main
+  pull_request:
+    types: [closed]
 
 permissions:
   id-token: write
@@ -36,10 +38,22 @@ jobs:
           name: values-yml
           path: values.yml
 
-  deploy:
+  deploy-dev:
     needs: pre-deploy
+    if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
     uses: stemdo-labs/final-project-exercise-RafaGll/.github/workflows/ci.yml@workflow
     with:
       version: ${{ needs.pre-deploy.outputs.version }}
       deploy: frontend
+      environment: dev
+    secrets: inherit
+
+  deploy-prod:
+    needs: pre-deploy
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' }}
+    uses: stemdo-labs/final-project-exercise-RafaGll/.github/workflows/ci.yml@workflow
+    with:
+      version: ${{ needs.pre-deploy.outputs.version }}
+      deploy: frontend
+      environment: prod
     secrets: inherit
