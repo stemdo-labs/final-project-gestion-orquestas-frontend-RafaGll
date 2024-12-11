@@ -29,12 +29,6 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Upload updated values.yml
-        uses: actions/upload-artifact@v3
-        with:
-          name: values-yml
-          path: values.yml
-
       - id: get-tipo
         run: |
           if ${{ github.event_name == 'push' }} && ${{ github.ref != 'refs/heads/main' }}; then
@@ -47,11 +41,17 @@ jobs:
         run: |
           sed -i "s/tag:.*/tag: ${{ env.version }}/" values.yml
           sed -i "s/environment:.*/environment: ${{ steps.get-tipo.outputs.tipo }}/" values.yml
-          if [ "${{ steps.get-tipo.outputs.tipo }}" == "dev" ]; then
-            sed -i "s/replicaCount:.*/replicaCount: 1/" values.yml
-          else
-            sed -i "s/replicaCount:.*/replicaCount: 1/" values.yml
-          fi
+          
+          sed -i "s|repository: .*frontend_.*|repository: acrfinalprojectrafa.azurecr.io/frontend_${{ steps.get-tipo.outputs.tipo }}|" values.yml
+          
+
+      - name: Upload updated values.yml
+        uses: actions/upload-artifact@v3
+        with:
+          name: values-yml
+          path: values.yml
+
+
 
 
   deploy:
