@@ -1,6 +1,7 @@
 replicaCount: 1
+environment: development
 image:
-  repository: acrfinalprojectrafa.azurecr.io/frontend
+  repository: acrfinalprojectrafa.azurecr.io/frontend_dev
   tag: 1.0.2
 imagePullSecret: acr-secret
 resources:
@@ -10,3 +11,4 @@ resources:
   limits:
     memory: "400Mi"
     cpu: "300m"
+
